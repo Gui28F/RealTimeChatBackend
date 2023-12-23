@@ -5,8 +5,7 @@ import com.springboot.realtimechatapp.resources.chat.Chat;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.mindrot.jbcrypt.BCrypt;
 @Entity
@@ -19,17 +18,19 @@ public class User implements Serializable {
     private String hashedPassword;
     @ManyToMany
     @JoinTable(
-            name = "chats",
+            name = "user_chats",
             joinColumns = @JoinColumn(name = "userid"),
-            inverseJoinColumns = @JoinColumn(name = "chatid"))
-    private Map<Long, Chat> chats;
+            inverseJoinColumns = @JoinColumn(name = "chatid")
+    )
+
+    private Set<Chat> chats;
     public User() {}
 
     public User(String userID, String username, String password){
         this.userID = userID;
         this.username = username;
         this.hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
-        this.chats = new HashMap<>();
+        this.chats = new HashSet<>();
     }
     public String getUsername() {
         return this.username;
@@ -40,9 +41,21 @@ public class User implements Serializable {
     }
 
     public Error joinChat(Chat chat){
-        if(this.chats.containsKey(chat.getID()))
+        if(this.chats.contains(chat))
             return Error.ALREADY_JOINED;
-        this.chats.put(chat.getID(), chat);
+        this.chats.add(chat);
         return Error.OK;
+    }
+
+    public String getHashedPassword(){
+        return this.hashedPassword;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return Objects.equals(userID, user.userID);
     }
 }

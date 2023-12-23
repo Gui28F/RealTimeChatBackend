@@ -12,9 +12,9 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Objects;
 
-@Controller
+
 public class ChatController {
-    private final UserRepository users;
+    /*private final UserRepository users;
 
     @Autowired
     public ChatController(UserRepository users){
@@ -33,5 +33,5 @@ public class ChatController {
     @SendTo("/chat/public")
     public ChatMessage sendMessage(@Payload ChatMessage chatMessage) {
         return chatMessage;
-    }
+    }*/
 }
