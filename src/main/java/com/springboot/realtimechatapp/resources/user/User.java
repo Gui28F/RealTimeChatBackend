@@ -29,7 +29,7 @@ public class User implements Serializable {
     public User(String userID, String username, String password){
         this.userID = userID;
         this.username = username;
-        this.hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
+        this.hashedPassword = password;
         this.chats = new HashSet<>();
     }
     public String getUsername() {

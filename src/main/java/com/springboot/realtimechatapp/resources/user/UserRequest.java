@@ -6,7 +6,11 @@ public class UserRequest {
     private String password;
 
     public UserRequest(){}
-
+    public UserRequest(String userID, String username, String password) {
+        this.userID = userID;
+        this.username = username;
+        this.password = password;
+    }
     public String getUserID() {
         return userID;
     }
