@@ -42,8 +42,7 @@ public class UserService implements UserDetailsService {
         if(userOp.isEmpty())
             throw new UsernameNotFoundException("");
         User user = userOp.get();
-        //here I should have more than one type of user
-        SimpleGrantedAuthority userAuthority = new SimpleGrantedAuthority("USER");
+        SimpleGrantedAuthority userAuthority = new SimpleGrantedAuthority(UserType.USER.toString());
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(userAuthority);
         return new org.springframework.security.core.userdetails.User(user.getID(), user.getHashedPassword(),authorities);

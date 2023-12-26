@@ -3,10 +3,7 @@ package com.springboot.realtimechatapp.resources;
 import com.springboot.realtimechatapp.config.JwtGenerator;
 import com.springboot.realtimechatapp.resources.chat.ChatService;
 import com.springboot.realtimechatapp.resources.message.MessageService;
-import com.springboot.realtimechatapp.resources.user.User;
-import com.springboot.realtimechatapp.resources.user.UserLoginResponse;
-import com.springboot.realtimechatapp.resources.user.UserRequest;
-import com.springboot.realtimechatapp.resources.user.UserService;
+import com.springboot.realtimechatapp.resources.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +14,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,19 +26,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 
 @CrossOrigin(origins = {"http://localhost:3000/", "http://192.168.1.11:3000/"})
 @Controller
 public class AppController {
-    private static final Logger logger = LoggerFactory.getLogger(AppController.class);
-
-    private static final String USER_ALREADY_EXISTS = "User already exists!";
-    private UserService userService;
-    private ChatService chatService;
-    private MessageService messageService;
-    private AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final ChatService chatService;
+    private final MessageService messageService;
+    private final AuthenticationManager authenticationManager;
     private final JwtGenerator jwtGenerator;
     private final PasswordEncoder passwordEncoder;
 
@@ -55,13 +56,11 @@ public class AppController {
 
     @PostMapping(value = "/users/register", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> register(@RequestBody UserRequest userRequest) {
+        if(containsNullFiels(userRequest))
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Contains null fields");
         String hashedPassword = passwordEncoder.encode(userRequest.getPassword());
         User user = new User(userRequest.getUserID(), userRequest.getUsername(), hashedPassword);
         return convertErrorToResponse(userService.addUser(user));
-    }
-    @GetMapping(value = "/users/t", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> t(@RequestBody UserRequest userRequest) {
-        return new ResponseEntity<>(HttpStatus.OK);
     }
     @PostMapping(value = "/users/login", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> login(@RequestBody UserRequest userRequest) {
@@ -71,12 +70,28 @@ public class AppController {
         User user = userOp.get();
         if(!passwordEncoder.matches(userRequest.getPassword(), user.getHashedPassword()))
             return new ResponseEntity<>("Password is wrong", HttpStatus.BAD_REQUEST);
+
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userRequest.getUserID(), userRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getID(), userRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtGenerator.generateToken(authentication);
+        String token = jwtGenerator.generateToken(authentication, UserType.USER.toString());
         UserLoginResponse res = new UserLoginResponse(user.getID(), token);
         return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/user/t")
+    public ResponseEntity<String> t(@AuthenticationPrincipal UserDetails userDetails){
+        if (userDetails != null) {
+            String username = userDetails.getUsername();
+            return ResponseEntity.ok("Endpoint /t accessed by logged-in user: " + username);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
+        }
+    }
+
+    private boolean containsNullFiels(UserRequest request){
+        return request.getPassword() == null || request.getUsername() == null
+                || request.getUserID() == null;
     }
 
     private ResponseEntity<Object> convertErrorToResponse(Error error){

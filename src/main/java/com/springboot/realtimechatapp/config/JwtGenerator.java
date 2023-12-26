@@ -11,7 +11,7 @@ import java.util.Date;
 @Component
 public class JwtGenerator {
 
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication, String userType) {
         String username= authentication.getName();
         Date currentDate = new Date();
         Date expiryDate = new Date(currentDate.getTime()+ SecurityConstants.JWT_EXPIRATION);
@@ -21,6 +21,7 @@ public class JwtGenerator {
                 .setIssuedAt(currentDate)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS256, SecurityConstants.JWT_SECRET)
+                .claim("usertype", userType)
                 .compact();
         return token;
     }
@@ -47,6 +48,7 @@ public class JwtGenerator {
             return true;
         }
         catch (Exception ex) {
+            System.err.println(ex.toString());
             throw new AuthenticationCredentialsNotFoundException("JWT token is not valid " + token);
         }
     }
