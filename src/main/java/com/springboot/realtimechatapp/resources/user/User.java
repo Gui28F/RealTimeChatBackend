@@ -1,13 +1,12 @@
 package com.springboot.realtimechatapp.resources.user;
 
-import com.springboot.realtimechatapp.resources.Error;
+import com.springboot.realtimechatapp.Result;
 import com.springboot.realtimechatapp.resources.chat.Chat;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.util.*;
 
-import org.mindrot.jbcrypt.BCrypt;
 @Entity
 @Table(name="users")
 public class User implements Serializable {
@@ -40,11 +39,11 @@ public class User implements Serializable {
         return this.userID;
     }
 
-    public Error joinChat(Chat chat){
+    public Result<Void> joinChat(Chat chat){
         if(this.chats.contains(chat))
-            return Error.ALREADY_JOINED;
+            return Result.error(Result.ErrorCode.CONFLICT);
         this.chats.add(chat);
-        return Error.OK;
+        return Result.error(Result.ErrorCode.CONFLICT);
     }
 
     public String getHashedPassword(){

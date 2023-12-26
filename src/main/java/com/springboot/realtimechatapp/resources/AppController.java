@@ -1,6 +1,8 @@
 package com.springboot.realtimechatapp.resources;
 
+import com.springboot.realtimechatapp.Result;
 import com.springboot.realtimechatapp.config.JwtGenerator;
+import com.springboot.realtimechatapp.resources.chat.Chat;
 import com.springboot.realtimechatapp.resources.chat.ChatService;
 import com.springboot.realtimechatapp.resources.message.MessageService;
 import com.springboot.realtimechatapp.resources.user.*;
@@ -26,10 +28,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
 
 @CrossOrigin(origins = {"http://localhost:3000/", "http://192.168.1.11:3000/"})
@@ -60,7 +59,9 @@ public class AppController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Contains null fields");
         String hashedPassword = passwordEncoder.encode(userRequest.getPassword());
         User user = new User(userRequest.getUserID(), userRequest.getUsername(), hashedPassword);
-        return convertErrorToResponse(userService.addUser(user));
+        Result<Void> res = userService.addUser(user);
+        return new ResponseEntity<>(Result.statusCodeFrom(res));
+
     }
     @PostMapping(value = "/users/login", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> login(@RequestBody UserRequest userRequest) {
@@ -85,35 +86,20 @@ public class AppController {
             String username = userDetails.getUsername();
             return ResponseEntity.ok("Endpoint /t accessed by logged-in user: " + username);
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
+            return new ResponseEntity<>("Not logged in",HttpStatus.UNAUTHORIZED);
         }
     }
-
+    @GetMapping(value = "/user/chats", produces = "application/json")
+    public ResponseEntity<List<Chat>> getChats(@AuthenticationPrincipal UserDetails userDetails){
+        Optional<User> userOp = userService.getUser(userDetails.getUsername());
+        if(userOp.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        List<Chat> chats = userService.getChats(userDetails.getUsername());
+        return new ResponseEntity<>(chats, HttpStatus.OK);
+    }
     private boolean containsNullFiels(UserRequest request){
         return request.getPassword() == null || request.getUsername() == null
                 || request.getUserID() == null;
     }
 
-    private ResponseEntity<Object> convertErrorToResponse(Error error){
-        switch (error){
-            case CONFLICT -> {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict");
-            }
-            case ALREADY_JOINED -> {
-                return  ResponseEntity.status(HttpStatus.CONFLICT).body("Already joined");
-            }
-            case OK -> {
-                return  ResponseEntity.status(HttpStatus.OK).body("OK");
-            }
-            case NOT_FOUND -> {
-                return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Not found");
-            }
-            case ALREADY_EXISTS -> {
-                return  ResponseEntity.status(HttpStatus.CONFLICT).body("Already exists");
-            }
-            default -> {
-                return  ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
-            }
-        }
-    }
 }

@@ -1,8 +1,8 @@
 package com.springboot.realtimechatapp.resources.user;
 
+import com.springboot.realtimechatapp.Result;
+import com.springboot.realtimechatapp.resources.chat.Chat;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import com.springboot.realtimechatapp.resources.Error;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -28,12 +28,15 @@ public class UserService implements UserDetailsService {
         return userRepository.findById(userID);
     }
 
-
-    public Error addUser(User user){
+    public Result<Void> addUser(User user){
         if(this.userRepository.existsById(user.getID()))
-            return Error.ALREADY_EXISTS;
+            return Result.error(Result.ErrorCode.CONFLICT);
         userRepository.save(user);
-        return Error.OK;
+        return Result.ok();
+    }
+
+    public List<Chat> getChats(String userID){
+        return userRepository.findAllChatsByUserId(userID);
     }
 
     @Override
