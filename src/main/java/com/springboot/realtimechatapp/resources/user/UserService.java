@@ -18,7 +18,7 @@ import java.util.Optional;
 @Service
 public class UserService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     @Autowired
     public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
@@ -33,6 +33,16 @@ public class UserService implements UserDetailsService {
             return Result.error(Result.ErrorCode.CONFLICT);
         userRepository.save(user);
         return Result.ok();
+    }
+
+    public Result<Void> addChat(String userId, Chat chat){
+        Optional<User> userOp = getUser(userId);
+        if(userOp.isEmpty())
+            return Result.error(Result.ErrorCode.NOT_FOUND);
+        User user = userOp.get();
+        Result<Void> res = user.addChat(chat);
+        userRepository.save(user);
+        return res;
     }
 
     public List<Chat> getChats(String userID){

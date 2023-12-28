@@ -39,11 +39,11 @@ public class User implements Serializable {
         return this.userID;
     }
 
-    public Result<Void> joinChat(Chat chat){
+    public Result<Void> addChat(Chat chat){
         if(this.chats.contains(chat))
             return Result.error(Result.ErrorCode.CONFLICT);
         this.chats.add(chat);
-        return Result.error(Result.ErrorCode.CONFLICT);
+        return Result.ok();
     }
 
     public String getHashedPassword(){

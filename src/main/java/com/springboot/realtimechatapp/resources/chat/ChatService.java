@@ -7,10 +7,13 @@ import java.util.List;
 
 @Service
 public class ChatService {
-    private ChatRepository chatRepository;
+    private final ChatRepository chatRepository;
     @Autowired
     public ChatService(ChatRepository chatRepository){
         this.chatRepository = chatRepository;
     }
 
+    public void addChat(Chat chat){
+        chatRepository.save(chat);
+    }
 }

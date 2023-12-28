@@ -99,28 +99,17 @@ public interface Result<T> {
 	 * Translates a Result<T> to a HTTP Status code
 	 */
 	static HttpStatusCode statusCodeFrom(Result<?> result) {
-		switch (result.error()) {
-			case CONFLICT:
-				return HttpStatus.CONFLICT;
-			case NOT_FOUND:
-				return HttpStatus.NOT_FOUND;
-			case FORBIDDEN:
-				return HttpStatus.FORBIDDEN;
-			case TIMEOUT:
-			case BAD_REQUEST:
-				return HttpStatus.BAD_REQUEST;
-			case NOT_IMPLEMENTED:
-				return HttpStatus.NOT_IMPLEMENTED;
-			case INTERNAL_ERROR:
-				return HttpStatus.INTERNAL_SERVER_ERROR;
-			case REDIRECTED:
-				return result.errorValue() == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
-			case OK:
-				return result.value() == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
-
-			default:
-				return HttpStatus.INTERNAL_SERVER_ERROR;
-		}
+        return switch (result.error()) {
+            case CONFLICT -> HttpStatus.CONFLICT;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case FORBIDDEN -> HttpStatus.FORBIDDEN;
+            case TIMEOUT, BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+            case NOT_IMPLEMENTED -> HttpStatus.NOT_IMPLEMENTED;
+            case INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR;
+            case REDIRECTED -> result.errorValue() == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+            case OK -> result.value() == null ? HttpStatus.NO_CONTENT : HttpStatus.OK;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
 	}
 }
 

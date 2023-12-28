@@ -4,6 +4,7 @@ import com.springboot.realtimechatapp.Result;
 import com.springboot.realtimechatapp.config.JwtGenerator;
 import com.springboot.realtimechatapp.resources.chat.Chat;
 import com.springboot.realtimechatapp.resources.chat.ChatService;
+import com.springboot.realtimechatapp.resources.message.Message;
 import com.springboot.realtimechatapp.resources.message.MessageService;
 import com.springboot.realtimechatapp.resources.user.*;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,10 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -96,6 +95,20 @@ public class AppController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         List<Chat> chats = userService.getChats(userDetails.getUsername());
         return new ResponseEntity<>(chats, HttpStatus.OK);
+    }
+
+    @PostMapping(value="/user/chat")
+    public ResponseEntity<Void> addChat(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String chatName){
+        Chat chat = new Chat(chatName);
+        chatService.addChat(chat);
+        Result<Void> res = userService.addChat(userDetails.getUsername(),chat);
+        return new ResponseEntity<>(Result.statusCodeFrom(res));
+    }
+
+    @MessageMapping("/chat.send/{chatId}")
+    @SendTo("/chat/{chatId}")
+    public Message sendMessage(@PathVariable Long chatId, @Payload Message message) {
+        return message;
     }
     private boolean containsNullFiels(UserRequest request){
         return request.getPassword() == null || request.getUsername() == null
