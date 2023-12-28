@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 
-@CrossOrigin(origins = {"http://localhost:3000/", "http://192.168.1.11:3000/"})
+@CrossOrigin(origins = {"*","http://localhost:3000/", "http://192.168.1.11:3000/"})
 @Controller
 public class AppController {
     private final UserService userService;
