@@ -108,6 +108,7 @@ public class AppController {
     @MessageMapping("/chat.send/{chatId}")
     @SendTo("/chat/{chatId}")
     public Message sendMessage(@PathVariable Long chatId, @Payload Message message) {
+        chatService.addMessage(chatId,message);
         return message;
     }
     private boolean containsNullFiels(UserRequest request){

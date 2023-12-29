@@ -39,9 +39,10 @@ public class SecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable).cors(Customizer.withDefaults())
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/users/**").permitAll()
-                .requestMatchers("/user/**").authenticated()
-                .requestMatchers("/auth/admin/**").authenticated()
+                    .requestMatchers("/users/**").permitAll()
+                    .requestMatchers("/websocket/**").permitAll()
+                    .requestMatchers("/user/**").authenticated()
+                    .requestMatchers("/auth/admin/**").authenticated()
             );
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -54,7 +55,6 @@ public class SecurityConfig {
         configuration.addAllowedOrigin("http://192.168.1.11:3000");
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
-        System.err.println("CORS Configuration: " + configuration);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
