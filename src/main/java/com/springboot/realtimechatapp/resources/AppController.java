@@ -8,6 +8,8 @@ import com.springboot.realtimechatapp.resources.message.Message;
 import com.springboot.realtimechatapp.resources.message.MessageRequest;
 import com.springboot.realtimechatapp.resources.message.MessageService;
 import com.springboot.realtimechatapp.resources.user.*;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.http.WebSocketHandshakeException;
 import java.util.*;
 
 
@@ -110,9 +113,12 @@ public class AppController {
     @MessageMapping("/chat.send/{chatId}")
     @SendTo("/chat/{chatId}")
     public Message sendMessage(@DestinationVariable Long chatId, @Payload MessageRequest message) {
-        System.err.println(chatId);
         Optional<User> userOp = userService.getUser(message.getSenderId());
+        if(userOp.isEmpty())
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         Optional<Chat> chatOp = chatService.getChat(chatId);
+        if(chatOp.isEmpty())
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         Message msg = new Message(userOp.get(), chatOp.get(), message.getMsg());
         messageService.addMsg(msg);
         return msg;
