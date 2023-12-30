@@ -11,4 +11,8 @@ public class MessageService {
     public MessageService(MessageRepository messageRepository){
         this.messageRepository = messageRepository;
     }
+
+    public void addMsg(Message msg){
+        messageRepository.save(msg);
+    }
 }

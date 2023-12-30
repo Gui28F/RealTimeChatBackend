@@ -27,7 +27,7 @@ public class Chat {
     @JsonProperty("participants")
     private Set<User> participants;
 
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     @JsonProperty("messages")
     private List<Message> messages;
     public Chat(){}

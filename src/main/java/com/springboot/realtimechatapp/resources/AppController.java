@@ -5,6 +5,7 @@ import com.springboot.realtimechatapp.config.JwtGenerator;
 import com.springboot.realtimechatapp.resources.chat.Chat;
 import com.springboot.realtimechatapp.resources.chat.ChatService;
 import com.springboot.realtimechatapp.resources.message.Message;
+import com.springboot.realtimechatapp.resources.message.MessageRequest;
 import com.springboot.realtimechatapp.resources.message.MessageService;
 import com.springboot.realtimechatapp.resources.user.*;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -107,9 +109,13 @@ public class AppController {
 
     @MessageMapping("/chat.send/{chatId}")
     @SendTo("/chat/{chatId}")
-    public Message sendMessage(@PathVariable Long chatId, @Payload Message message) {
-        chatService.addMessage(chatId,message);
-        return message;
+    public Message sendMessage(@DestinationVariable Long chatId, @Payload MessageRequest message) {
+        System.err.println(chatId);
+        Optional<User> userOp = userService.getUser(message.getSenderId());
+        Optional<Chat> chatOp = chatService.getChat(chatId);
+        Message msg = new Message(userOp.get(), chatOp.get(), message.getMsg());
+        messageService.addMsg(msg);
+        return msg;
     }
     private boolean containsNullFiels(UserRequest request){
         return request.getPassword() == null || request.getUsername() == null

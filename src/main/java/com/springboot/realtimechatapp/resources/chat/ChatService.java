@@ -19,8 +19,13 @@ public class ChatService {
         Optional<Chat> chatOp = chatRepository.findById(chatId);
         Chat chat = chatOp.get();
         chat.addMsg(msg);
+        chatRepository.save(chat);
     }
     public void addChat(Chat chat){
         chatRepository.save(chat);
+    }
+
+    public Optional<Chat> getChat(Long chatId){
+        return chatRepository.findById(chatId);
     }
 }
