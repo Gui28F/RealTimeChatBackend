@@ -104,11 +104,27 @@ public class AppController {
     }
 
     @PostMapping(value="/user/chat")
-    public ResponseEntity<Void> addChat(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String chatName){
+    public ResponseEntity<Chat> addChat(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String chatName){
         Chat chat = new Chat(chatName);
         chatService.addChat(chat);
         Result<Void> res = userService.addChat(userDetails.getUsername(),chat);
-        return new ResponseEntity<>(Result.statusCodeFrom(res));
+        if(res.isOK())
+            return new ResponseEntity<>(chat, HttpStatus.OK);
+        else
+            return new ResponseEntity<>( Result.statusCodeFrom(res));
+    }
+
+    @PostMapping(value="/user/joinchat")
+    public ResponseEntity<Chat> joinChat(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Long chatID){
+        Optional<Chat> chatOP = chatService.getChat(chatID);
+        if(chatOP.isEmpty())
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        Chat chat = chatOP.get();
+        Result<Void> res = userService.addChat(userDetails.getUsername(),chat);
+        if(res.isOK())
+            return new ResponseEntity<>(chat, HttpStatus.OK);
+        else
+            return new ResponseEntity<>( Result.statusCodeFrom(res));
     }
 
     @MessageMapping("/chat.send/{chatId}")
