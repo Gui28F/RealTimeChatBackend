@@ -21,6 +21,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/websocket")
                 .addInterceptors(new HandshakeInterceptor())
-                .setAllowedOrigins("http://localhost:3000/", "http://192.168.1.11:3000/").withSockJS();
+                .setAllowedOriginPatterns("https://*").withSockJS();
     }
 
     @Override

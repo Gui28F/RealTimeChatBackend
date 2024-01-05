@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 
 @Configuration
@@ -38,6 +39,8 @@ public class SecurityConfig {
 
         http
             .csrf(AbstractHttpConfigurer::disable).cors(Customizer.withDefaults())
+                .requiresChannel(channel ->
+                        channel.anyRequest().requiresSecure())
             .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                     .requestMatchers("/users/**").permitAll()
                     .requestMatchers("/websocket/**").permitAll()
@@ -51,10 +54,9 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.addAllowedOrigin("http://192.168.1.11:3000");
+        configuration.addAllowedOriginPattern("https://*");
         configuration.setAllowCredentials(true);
-        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowedHeaders(List.of("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

@@ -36,7 +36,7 @@ import java.net.http.WebSocketHandshakeException;
 import java.util.*;
 
 
-@CrossOrigin(origins = {"*","http://localhost:3000/", "http://192.168.1.11:3000/"})
+@CrossOrigin(origins = {"*"})
 @Controller
 public class AppController {
     private final UserService userService;
